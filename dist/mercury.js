@@ -1608,7 +1608,8 @@ var Resource = {
               };
               result = {
                 body: preparedResponse,
-                response: validResponse
+                response: validResponse,
+                alreadyDecoded: true
               };
               _context.next = 9;
               break;
@@ -1648,7 +1649,9 @@ var Resource = {
   }(),
   generateDoc: function generateDoc(_ref) {
     var content = _ref.body,
-        response = _ref.response;
+        response = _ref.response,
+        _ref$alreadyDecoded = _ref.alreadyDecoded,
+        alreadyDecoded = _ref$alreadyDecoded === void 0 ? false : _ref$alreadyDecoded;
     var _response$headers$con = response.headers['content-type'],
         contentType = _response$headers$con === void 0 ? '' : _response$headers$con; // TODO: Implement is_text function from
     // https://github.com/ReadabilityHoldings/readability/blob/8dc89613241d04741ebd42fa9fa7df1b1d746303/readability/utils/text.py#L57
@@ -1659,7 +1662,8 @@ var Resource = {
 
     var $ = this.encodeDoc({
       content: content,
-      contentType: contentType
+      contentType: contentType,
+      alreadyDecoded: alreadyDecoded
     });
 
     if ($.root().children().length === 0) {
@@ -1673,7 +1677,14 @@ var Resource = {
   },
   encodeDoc: function encodeDoc(_ref2) {
     var content = _ref2.content,
-        contentType = _ref2.contentType;
+        contentType = _ref2.contentType,
+        _ref2$alreadyDecoded = _ref2.alreadyDecoded,
+        alreadyDecoded = _ref2$alreadyDecoded === void 0 ? false : _ref2$alreadyDecoded;
+
+    if (alreadyDecoded) {
+      return cheerio.load(content);
+    }
+
     var encoding = getEncoding(contentType);
     var decodedContent = iconv.decode(content, encoding);
     var $ = cheerio.load(decodedContent); // after first cheerio.load, check to see if encoding matches
